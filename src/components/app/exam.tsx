@@ -90,7 +90,7 @@ function useIntegrityLog(active: boolean, traineeId: string) {
   return { log, flush, counts };
 }
 
-export function Exam({ questions }: { questions: Q[] }) {
+export function Exam({ questions, demo }: { questions: Q[]; demo: boolean }) {
   const [phase, setPhase] = useState<"consent" | "running" | "done">("consent");
   const [who, setWho] = useState(DEMO_TRAINEE_ID);
   const [answers, setAnswers] = useState<(number | null)[]>(() => questions.map(() => null));
@@ -130,6 +130,7 @@ export function Exam({ questions }: { questions: Q[] }) {
           ))}
         </ul>
         <p className="mt-3 text-sm text-ink-faint">Nothing else on your phone is seen or recorded.</p>
+        {demo && (
         <div className="mt-5">
           <label htmlFor="ex-who" className="mb-1.5 block text-sm font-medium">
             Your name <span className="font-normal text-ink-faint">(demo)</span>
@@ -142,6 +143,7 @@ export function Exam({ questions }: { questions: Q[] }) {
             ))}
           </select>
         </div>
+        )}
         <button type="button" onClick={begin} className="btn btn-primary mt-6 w-full">
           I understand, start the exam
         </button>

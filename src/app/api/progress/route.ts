@@ -1,5 +1,6 @@
 import { z } from "zod";
-import { DEMO_TRAINEE_ID, lessons } from "@/lib/data";
+import { getCurrentUser } from "@/lib/auth";
+import { lessons } from "@/lib/data";
 import { readJson, sameOrigin } from "@/lib/guard";
 import { rateLimit } from "@/lib/rate-limit";
 import { recordProgress } from "@/lib/store";
@@ -35,12 +36,14 @@ export async function POST(request: Request) {
     return Response.json({ error: "Some results were malformed." }, { status: 400 });
   }
 
+  const user = await getCurrentUser();
+  if (!user?.traineeId) return Response.json({ error: "Sign in as a trainee." }, { status: 403 });
+  const traineeId = user.traineeId;
   const now = Date.now();
   const events = parsed.data.events
     .filter((e) => knownLessons.has(e.lessonId) && e.at <= now + 60_000)
-    // In production the trainee ID comes from the authenticated session, never the body.
-    .map((e) => ({ ...e, traineeId: DEMO_TRAINEE_ID }));
+    .map((e) => ({ ...e, traineeId }));
 
-  const added = recordProgress(events);
+  const added = await recordProgress(events);
   return Response.json({ received: events.length, added });
 }

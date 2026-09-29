@@ -1,5 +1,6 @@
 import QRCode from "qrcode";
 import { formatCode, getSession } from "@/lib/attendance";
+import { can, getCurrentUser } from "@/lib/auth";
 import { getTrainee } from "@/lib/data";
 import { rateLimit } from "@/lib/rate-limit";
 
@@ -10,8 +11,11 @@ export async function GET(request: Request, { params }: RouteContext<"/api/atten
   const limited = rateLimit(request, "session", 90, 60_000);
   if (limited) return limited;
 
-  const s = getSession(id);
-  if (!s) return Response.json({ error: "Session not found." }, { status: 404 });
+  const user = await getCurrentUser();
+  if (!user || !can.runSessions(user)) return Response.json({ error: "Only trainers can view sessions." }, { status: 403 });
+  const s = await getSession(id);
+  // Trainers see only their own sessions.
+  if (!s || s.trainerId !== user.id) return Response.json({ error: "Session not found." }, { status: 404 });
 
   const origin = process.env.NEXT_PUBLIC_SITE_URL?.replace(/\/$/, "") ?? new URL(request.url).origin;
   const link = `${origin}/a/${s.code}`;

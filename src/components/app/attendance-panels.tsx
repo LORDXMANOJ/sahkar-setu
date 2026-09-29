@@ -8,12 +8,14 @@ import { CheckInForm } from "./check-in-form";
 const timeFmt = new Intl.DateTimeFormat("en-IN", { hour: "2-digit", minute: "2-digit", second: "2-digit" });
 const STORE = "ss.trainer.session";
 
-export function AttendancePanels() {
-  const [view, setView] = useState<"trainee" | "trainer">("trainee");
+export function AttendancePanels({ demo, trainee, trainer }: { demo: boolean; trainee: boolean; trainer: boolean }) {
+  const [view, setView] = useState<"trainee" | "trainer">(trainee ? "trainee" : "trainer");
+  const both = trainee && trainer;
 
   return (
     <div>
       {/* Phones show one role at a time; wide screens show both side by side. */}
+      {both && (
       <div role="group" aria-label="Who is using this screen" className="mb-6 inline-flex rounded-lg bg-line/60 p-1 lg:hidden">
         {(["trainee", "trainer"] as const).map((v) => (
           <button
@@ -27,18 +29,23 @@ export function AttendancePanels() {
           </button>
         ))}
       </div>
+      )}
 
-      <div className="grid gap-6 lg:grid-cols-2">
-        <section aria-labelledby="trainee-title" className={`panel h-fit p-6 ${view === "trainee" ? "" : "hidden lg:block"}`}>
+      <div className={`grid gap-6 ${both ? "lg:grid-cols-2" : "max-w-2xl"}`}>
+        {trainee && (
+        <section aria-labelledby="trainee-title" className={`panel h-fit p-6 ${!both || view === "trainee" ? "" : "hidden lg:block"}`}>
           <h2 id="trainee-title" className="text-lg font-semibold">Mark yourself present</h2>
           <p className="mt-1 mb-6 text-sm text-ink-soft">
             Type the code from the trainer&apos;s screen, open the link they shared, or scan the QR. You must be on the classroom Wi-Fi.
           </p>
-          <CheckInForm />
+          <CheckInForm demo={demo} />
         </section>
-        <div className={view === "trainer" ? "" : "hidden lg:block"}>
-          <TrainerPanel />
-        </div>
+        )}
+        {trainer && (
+          <div className={!both || view === "trainer" ? "" : "hidden lg:block"}>
+            <TrainerPanel />
+          </div>
+        )}
       </div>
     </div>
   );

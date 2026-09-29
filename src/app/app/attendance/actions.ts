@@ -4,6 +4,7 @@ import { randomBytes } from "node:crypto";
 import { cookies, headers } from "next/headers";
 import { z } from "zod";
 import * as att from "@/lib/attendance";
+import { can, getCurrentUser } from "@/lib/auth";
 import { getTrainee } from "@/lib/data";
 import { overLimit } from "@/lib/rate-limit";
 
@@ -23,7 +24,7 @@ async function deviceId() {
   jar.set(DEVICE_COOKIE, id, {
     httpOnly: true,
     sameSite: "lax",
-    secure: process.env.NODE_ENV === "production" && (await headers()).get("x-forwarded-proto") === "https",
+    secure: (await headers()).get("x-forwarded-proto") === "https",
     maxAge: 60 * 60 * 24 * 365,
     path: "/",
   });
@@ -36,20 +37,28 @@ const Start = z.object({
   requireSameNetwork: z.boolean(),
 });
 
-// In production only a signed-in trainer of the programme can start, end or rotate.
+async function trainer() {
+  const user = await getCurrentUser();
+  return user && can.runSessions(user) ? user : null;
+}
+
 export async function startSessionAction(input: z.input<typeof Start>) {
+  const user = await trainer();
+  if (!user) return { ok: false as const, message: "Only trainers can start a session." };
   const parsed = Start.safeParse(input);
   if (!parsed.success) return { ok: false as const, message: "Give the session a title and room." };
-  const s = att.startSession({ ...parsed.data, trainerIp: await requestIp() });
+  const s = await att.startSession({ ...parsed.data, trainerId: user.id, trainerIp: await requestIp() });
   return { ok: true as const, id: s.id };
 }
 
 export async function endSessionAction(id: string) {
-  att.endSession(String(id));
+  const user = await trainer();
+  if (user) await att.endSession(String(id), user.id);
 }
 
 export async function rotateCodeAction(id: string) {
-  att.rotateCode(String(id));
+  const user = await trainer();
+  if (user) await att.rotateCode(String(id), user.id);
 }
 
 export type CheckInResult =
@@ -62,8 +71,15 @@ const messages = {
   "device-used": "This phone has already marked someone present in this session. Each trainee marks from their own phone.",
 };
 
-export async function checkIn(rawCode: string, traineeId: string): Promise<CheckInResult> {
-  if (typeof rawCode !== "string" || typeof traineeId !== "string") return { ok: false, message: messages["no-session"] };
+/** demoTraineeId is only used in demo mode; signed-in trainees always mark themselves. */
+export async function checkIn(rawCode: string, demoTraineeId?: string): Promise<CheckInResult> {
+  if (typeof rawCode !== "string") return { ok: false, message: messages["no-session"] };
+
+  const user = await getCurrentUser();
+  if (!user) return { ok: false, message: "Sign in to mark attendance." };
+  const traineeId = user.role === "demo" ? String(demoTraineeId ?? "") : user.traineeId;
+  const trainee = traineeId ? getTrainee(traineeId) : undefined;
+  if (!trainee) return { ok: false, message: user.role === "demo" ? "Choose your name first." : "Only trainees can mark attendance." };
 
   // Ten tries a minute per network address: enough for typos, useless for guessing codes.
   if (overLimit(`checkin:${await requestIp()}`, 10, 60_000)) {
@@ -78,11 +94,7 @@ export async function checkIn(rawCode: string, traineeId: string): Promise<Check
     // not a URL
   }
 
-  // In production the trainee comes from the signed-in session, not the request.
-  const trainee = getTrainee(traineeId);
-  if (!trainee) return { ok: false, message: "Choose your name first." };
-
-  const r = att.checkIn(code, trainee.id, await deviceId(), await requestIp());
+  const r = await att.checkIn(code, trainee.id, await deviceId(), await requestIp());
   if (!r.ok) return { ok: false, message: messages[r.reason] };
   return { ok: true, duplicate: r.duplicate, at: r.at, title: r.session.title, room: r.session.room, name: trainee.name };
 }

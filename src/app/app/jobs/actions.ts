@@ -2,15 +2,17 @@
 
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
-import { DEMO_TRAINEE_ID, programmes } from "@/lib/data";
+import { can, getCurrentUser } from "@/lib/auth";
+import { programmes } from "@/lib/data";
 import { allJobs, apply, postJob } from "@/lib/store";
 
 export async function applyToJob(jobId: string) {
-  if (typeof jobId !== "string" || !allJobs().some((j) => j.id === jobId)) {
+  const user = await getCurrentUser();
+  if (!user?.traineeId) return { ok: false as const, message: "Sign in as a trainee to apply." };
+  if (typeof jobId !== "string" || !(await allJobs()).some((j) => j.id === jobId)) {
     return { ok: false as const, message: "That job is no longer open." };
   }
-  // In production the trainee ID comes from the authenticated session.
-  apply(jobId, DEMO_TRAINEE_ID);
+  await apply(jobId, user.traineeId);
   revalidatePath("/app/jobs");
   revalidatePath("/app/employer");
   return { ok: true as const };
@@ -33,6 +35,8 @@ const JobForm = z.object({
 export type PostJobState = { ok?: boolean; errors?: Record<string, string>; jobId?: string };
 
 export async function postJobAction(_: PostJobState, form: FormData): Promise<PostJobState> {
+  const user = await getCurrentUser();
+  if (!user || !can.hire(user)) return { errors: { form: "Only employers can post jobs." } };
   const parsed = JobForm.safeParse({
     title: form.get("title") ?? "",
     employer: form.get("employer") ?? "",
@@ -51,7 +55,7 @@ export async function postJobAction(_: PostJobState, form: FormData): Promise<Po
     }
     return { errors };
   }
-  const job = postJob(parsed.data);
+  const job = await postJob(parsed.data, user.id);
   revalidatePath("/app/employer");
   revalidatePath("/app/jobs");
   return { ok: true, jobId: job.id };

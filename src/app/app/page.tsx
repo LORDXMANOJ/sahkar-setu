@@ -6,7 +6,6 @@ import { PageTransition } from "@/components/page-transition";
 import { Stamp } from "@/components/stamp";
 import {
   certificatesFor,
-  DEMO_TRAINEE_ID,
   getInstitute,
   getProgramme,
   getTrainee,
@@ -15,6 +14,8 @@ import {
 } from "@/lib/data";
 import { matchJob } from "@/lib/insights";
 import { getDictionary } from "@/lib/i18n/server";
+import { homeFor, requireUser } from "@/lib/auth";
+import { redirect } from "next/navigation";
 
 const shortDate = new Intl.DateTimeFormat("en-IN", { day: "2-digit", month: "short", year: "numeric" });
 
@@ -28,7 +29,9 @@ const today = [
 
 export default async function TraineeHome() {
   const { t } = await getDictionary();
-  const trainee = getTrainee(DEMO_TRAINEE_ID)!;
+  const user = await requireUser("/app");
+  if (!user.traineeId) redirect(homeFor(user));
+  const trainee = getTrainee(user.traineeId)!;
   const certs = certificatesFor(trainee.id);
   const current = getProgramme("milk-quality")!;
   const institute = getInstitute(current.instituteId)!;

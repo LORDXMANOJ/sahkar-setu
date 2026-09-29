@@ -6,15 +6,17 @@ import { Meter, PageHeader, Pill } from "@/components/app/ui";
 import { PageTransition } from "@/components/page-transition";
 import { certificatesFor, getProgramme, programmes, trainees } from "@/lib/data";
 import { matchJob } from "@/lib/insights";
+import { can, requireRole } from "@/lib/auth";
 import { allJobs, applicationsFor } from "@/lib/store";
 
 export const metadata: Metadata = { title: "Employer" };
 
 export default async function EmployerPage({ searchParams }: PageProps<"/app/employer">) {
+  await requireRole(can.hire, "/app/employer");
   const { job: jobParam } = await searchParams;
-  const list = allJobs();
+  const list = await allJobs();
   const job = list.find((j) => j.id === jobParam) ?? list[0];
-  const applied = new Set(applicationsFor(job.id).map((a) => a.traineeId));
+  const applied = new Set((await applicationsFor(job.id)).map((a) => a.traineeId));
 
   const candidates = trainees
     .map((t) => ({ t, m: matchJob(t, job) }))

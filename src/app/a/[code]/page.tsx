@@ -4,6 +4,7 @@ import { CircleX } from "lucide-react";
 import { CheckInForm } from "@/components/app/check-in-form";
 import { Logo } from "@/components/logo";
 import { formatCode, sessionByCode } from "@/lib/attendance";
+import { requireUser } from "@/lib/auth";
 
 export const metadata: Metadata = { title: "Mark attendance", robots: { index: false, follow: false } };
 
@@ -11,7 +12,8 @@ export const metadata: Metadata = { title: "Mark attendance", robots: { index: f
 // Nothing is marked on page load, so link previews can't mark anyone present.
 export default async function AttendanceLink({ params }: PageProps<"/a/[code]">) {
   const { code } = await params;
-  const session = sessionByCode(code);
+  const user = await requireUser(`/a/${code}`);
+  const session = await sessionByCode(code);
 
   return (
     <main id="main" className="mx-auto flex min-h-dvh max-w-md flex-col px-4 py-8">
@@ -25,7 +27,7 @@ export default async function AttendanceLink({ params }: PageProps<"/a/[code]">)
               {session.room}, code <span className="num font-medium text-ink" data-no-translate>{formatCode(session.code)}</span>
             </p>
             <div className="mt-6">
-              <CheckInForm initialCode={session.code} fromLink />
+              <CheckInForm initialCode={session.code} fromLink demo={user.role === "demo"} />
             </div>
           </>
         ) : (

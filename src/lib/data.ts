@@ -1,5 +1,5 @@
 // Demo data. Every record here stands in for a table in the production
-// database (see supabase/schema.sql). Names of people and employers are fictional.
+// database (see supabase/setup.sql). Names of people and employers are fictional.
 
 export type Sector = "pacs" | "dairy" | "shg" | "fisheries" | "banking" | "leadership";
 

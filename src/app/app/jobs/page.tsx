@@ -3,15 +3,18 @@ import { MapPin, Wallet } from "lucide-react";
 import { ApplyButton } from "@/components/app/apply-button";
 import { Meter, PageHeader, Pill } from "@/components/app/ui";
 import { PageTransition } from "@/components/page-transition";
-import { DEMO_TRAINEE_ID, getTrainee } from "@/lib/data";
+import { can, requireRole } from "@/lib/auth";
+import { getTrainee } from "@/lib/data";
 import { matchJob } from "@/lib/insights";
-import { allJobs, hasApplied } from "@/lib/store";
+import { allJobs, appliedJobIds } from "@/lib/store";
 
 export const metadata: Metadata = { title: "Jobs" };
 
-export default function JobsPage() {
-  const trainee = getTrainee(DEMO_TRAINEE_ID)!;
-  const ranked = allJobs()
+export default async function JobsPage() {
+  const user = await requireRole(can.learn, "/app/jobs");
+  const trainee = getTrainee(user.traineeId!)!;
+  const applied = await appliedJobIds(trainee.id);
+  const ranked = (await allJobs())
     .map((job) => ({ job, m: matchJob(trainee, job) }))
     .sort((a, b) => b.m.score - a.m.score);
 
@@ -58,7 +61,7 @@ export default function JobsPage() {
                   <p className="mt-2 text-sm text-ink-faint">To learn: {m.missing.join(", ")}</p>
                 )}
                 <div className="mt-5">
-                  <ApplyButton jobId={job.id} applied={hasApplied(job.id, trainee.id)} />
+                  <ApplyButton jobId={job.id} applied={applied.has(job.id)} />
                 </div>
               </div>
 

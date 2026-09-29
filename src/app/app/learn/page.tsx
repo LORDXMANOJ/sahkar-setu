@@ -5,10 +5,12 @@ import { LearnProgress } from "@/components/app/learn-progress";
 import { PageHeader } from "@/components/app/ui";
 import { PageTransition } from "@/components/page-transition";
 import { getInstitute, getProgramme, lessons } from "@/lib/data";
+import { can, requireRole } from "@/lib/auth";
 
 export const metadata: Metadata = { title: "Learn" };
 
-export default function LearnPage() {
+export default async function LearnPage() {
+  await requireRole(can.learn, "/app/learn");
   const programme = getProgramme("milk-quality")!;
   const list = lessons["milk-quality"];
   const inst = getInstitute(programme.instituteId)!;

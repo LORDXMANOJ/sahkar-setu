@@ -1,6 +1,7 @@
 import { hasAI, streamChat } from "@/lib/ai";
 import { z } from "zod";
-import { DEMO_TRAINEE_ID, getTrainee } from "@/lib/data";
+import { getCurrentUser } from "@/lib/auth";
+import { getTrainee } from "@/lib/data";
 import { readJson, sameOrigin } from "@/lib/guard";
 import { locales } from "@/lib/i18n/dictionaries";
 import { rateLimit } from "@/lib/rate-limit";
@@ -41,8 +42,9 @@ export async function POST(request: Request) {
   if (!parsed.success) return Response.json({ error: "That message couldn't be read." }, { status: 400 });
 
   const { locale, messages } = parsed.data;
-  // In production the trainee comes from the authenticated session.
-  const trainee = getTrainee(DEMO_TRAINEE_ID)!;
+  const user = await getCurrentUser();
+  const trainee = user?.traineeId ? getTrainee(user.traineeId) : undefined;
+  if (!trainee) return Response.json({ error: "Sahayak is for signed-in trainees." }, { status: 403 });
   const headers = {
     "Content-Type": "text/plain; charset=utf-8",
     "Cache-Control": "no-store",

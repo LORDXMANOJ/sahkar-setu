@@ -14,7 +14,7 @@ function formatInput(v: string) {
   return clean.length > 3 ? `${clean.slice(0, 3)}-${clean.slice(3)}` : clean;
 }
 
-export function CheckInForm({ initialCode = "", fromLink = false }: { initialCode?: string; fromLink?: boolean }) {
+export function CheckInForm({ initialCode = "", fromLink = false, demo = false }: { initialCode?: string; fromLink?: boolean; demo?: boolean }) {
   const [code, setCode] = useState(formatInput(initialCode));
   // From a link, the code is fixed and already known.
   const [who, setWho] = useState(DEMO_TRAINEE_ID);
@@ -51,7 +51,8 @@ export function CheckInForm({ initialCode = "", fromLink = false }: { initialCod
       }}
       className="space-y-5"
     >
-      {/* Demo mode only: in production the name comes from the trainee's login. */}
+      {/* Demo mode only: signed-in trainees always mark themselves. */}
+      {demo && (
       <div>
         <label htmlFor="ci-who" className="mb-1.5 block text-sm font-medium">
           Your name <span className="font-normal text-ink-faint">(demo)</span>
@@ -64,6 +65,7 @@ export function CheckInForm({ initialCode = "", fromLink = false }: { initialCod
           ))}
         </select>
       </div>
+      )}
 
       {!fromLink && (
         <div>

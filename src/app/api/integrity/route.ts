@@ -1,5 +1,6 @@
 import { z } from "zod";
-import { DEMO_TRAINEE_ID, getTrainee } from "@/lib/data";
+import { getCurrentUser } from "@/lib/auth";
+import { getTrainee } from "@/lib/data";
 import { readJson, sameOrigin } from "@/lib/guard";
 import { rateLimit } from "@/lib/rate-limit";
 import { recordIntegrity } from "@/lib/store";
@@ -29,10 +30,12 @@ export async function POST(request: Request) {
   const parsed = Body.safeParse(body.data);
   if (!parsed.success) return Response.json({ error: "Malformed events." }, { status: 400 });
 
-  // In production the trainee comes from the signed-in session.
-  const traineeId = getTrainee(parsed.data.traineeId)?.id ?? DEMO_TRAINEE_ID;
+  // Signed-in trainees are always logged as themselves; the name picker exists only in demo mode.
+  const user = await getCurrentUser();
+  const traineeId = user?.role === "demo" ? getTrainee(parsed.data.traineeId)?.id : user?.traineeId;
+  if (!traineeId) return Response.json({ error: "Sign in as a trainee." }, { status: 403 });
   const now = Date.now();
-  recordIntegrity(
+  await recordIntegrity(
     parsed.data.events
       .filter((e) => e.at <= now + 60_000)
       .map((e) => ({ ...e, examId: parsed.data.examId, traineeId })),

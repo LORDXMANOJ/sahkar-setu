@@ -3,6 +3,7 @@ import { mkdir, readFile, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import path from "node:path";
 import { translateBatch } from "../ai";
+import { db, dbEnabled } from "../supabase/server";
 import { jobs, lessons, programmes, sectorLabel } from "../data";
 import { dictionaries, isBundled, languageName, type Dictionary, type Locale } from "./dictionaries";
 import { scriptOf } from "./languages";
@@ -68,6 +69,13 @@ function contentStrings() {
 
 async function readPack(code: Locale): Promise<Pack | null> {
   if (memory.has(code)) return memory.get(code)!;
+  if (dbEnabled) {
+    const { data } = await db().from("lang_packs").select("pack").eq("code", code).maybeSingle();
+    if (data?.pack) {
+      memory.set(code, data.pack as Pack);
+      return data.pack as Pack;
+    }
+  }
   for (const dir of [DIR, path.join(tmpdir(), "sahkar-lang")]) {
     try {
       const pack = JSON.parse(await readFile(path.join(dir, `${code}.json`), "utf8")) as Pack;
@@ -82,6 +90,11 @@ async function readPack(code: Locale): Promise<Pack | null> {
 
 async function savePack(pack: Pack) {
   memory.set(pack.code, pack);
+  if (dbEnabled) {
+    const { error } = await db().from("lang_packs").upsert({ code: pack.code, pack, updated_at: new Date().toISOString() });
+    if (!error) return;
+    console.warn("[lang] couldn't save pack to the database:", error.message);
+  }
   for (const dir of [DIR, path.join(tmpdir(), "sahkar-lang")]) {
     try {
       await mkdir(dir, { recursive: true });

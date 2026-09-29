@@ -8,13 +8,15 @@ import { dropoutRisk } from "@/lib/insights";
 import { IntegrityBadge } from "@/components/app/exam";
 import { getTrainee } from "@/lib/data";
 import { integritySummary } from "@/lib/store";
+import { can, requireRole } from "@/lib/auth";
 
 export const metadata: Metadata = { title: "Insights" };
 
 const nf = new Intl.NumberFormat("en-IN");
 
-export default function InsightsPage() {
-  const exams = integritySummary();
+export default async function InsightsPage() {
+  await requireRole(can.viewInsights, "/app/insights");
+  const exams = await integritySummary();
   const trained = monthlyTrained.reduce((s, m) => s + m.trained, 0);
   const certified = monthlyTrained.reduce((s, m) => s + m.certified, 0);
   const outreach = stateOutreach.reduce((s, r) => s + r.trainees, 0);
