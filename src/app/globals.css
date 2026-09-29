@@ -206,6 +206,37 @@ p { text-wrap: pretty; }
 .scroll-quiet { scrollbar-width: thin; scrollbar-color: var(--line-strong) transparent; }
 
 /* ---------------------------------------------------------------------------
+   Insights dashboard: a scoped, always-white theme with its own accent pair
+   (indigo + teal, validated for contrast and colorblind separation on white).
+   Forced light regardless of system dark mode, since a reporting dashboard
+   read in a bright office should stay legible and printable either way.
+--------------------------------------------------------------------------- */
+.insights-theme {
+  --canvas: #fbfbfc;
+  --surface: #ffffff;
+  --ink: #18181b;
+  --ink-soft: #52525b;
+  --ink-faint: #71717a;
+  --line: #e4e4e7;
+  --line-strong: #d4d4d8;
+  --accent: #4f46e5;
+  --accent-deep: #4338ca;
+  --accent-wash: #eef2ff;
+  --series-1: #4f46e5;
+  --series-2: #0d9488;
+  --shadow-card: 0 1px 2px rgb(24 24 27 / 0.04), 0 12px 32px -14px rgb(24 24 27 / 0.16);
+  /* `color` must be set here, not only the --ink variable: an inherited `color`
+     carries the used value computed at body, not a live reference, so anything
+     under this wrapper that doesn't set its own color would otherwise keep
+     body's dark-mode near-white text on a now-white background. */
+  color: var(--ink);
+  background: var(--canvas);
+  color-scheme: light;
+}
+.insights-theme .num { letter-spacing: -0.01em; }
+.insights-theme .panel { box-shadow: inset 0 0 0 1px var(--line), var(--shadow-card); }
+
+/* ---------------------------------------------------------------------------
    View transitions (React <ViewTransition> + Next.js Link transitionTypes)
 --------------------------------------------------------------------------- */
 ::view-transition { pointer-events: none; }
