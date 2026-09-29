@@ -47,6 +47,8 @@ export type Trainee = {
   attendancePct: number;
   quizTrend: number[]; // last scores, oldest first
   daysInactive: number;
+  /** Fictional demo numbers: the leading 0 makes them undialable. */
+  phone: string;
 };
 
 export type Certificate = {
@@ -255,6 +257,7 @@ export const trainees: Trainee[] = [
     attendancePct: 96,
     quizTrend: [72, 80, 86, 91],
     daysInactive: 1,
+    phone: "+91000004817",
   },
   {
     id: "SS-26-02291",
@@ -269,6 +272,7 @@ export const trainees: Trainee[] = [
     attendancePct: 88,
     quizTrend: [65, 70, 74, 78],
     daysInactive: 3,
+    phone: "+91000002291",
   },
   {
     id: "SS-26-05530",
@@ -283,6 +287,7 @@ export const trainees: Trainee[] = [
     attendancePct: 61,
     quizTrend: [70, 62, 55, 48],
     daysInactive: 16,
+    phone: "+91000005530",
   },
   {
     id: "SS-26-03312",
@@ -297,6 +302,7 @@ export const trainees: Trainee[] = [
     attendancePct: 79,
     quizTrend: [58, 60, 66, 64],
     daysInactive: 6,
+    phone: "+91000003312",
   },
   {
     id: "SS-26-06104",
@@ -311,6 +317,7 @@ export const trainees: Trainee[] = [
     attendancePct: 92,
     quizTrend: [80, 84, 83, 88],
     daysInactive: 2,
+    phone: "+91000006104",
   },
   {
     id: "SS-26-01877",
@@ -325,6 +332,7 @@ export const trainees: Trainee[] = [
     attendancePct: 70,
     quizTrend: [75, 68, 66, 60],
     daysInactive: 11,
+    phone: "+91000001877",
   },
 ];
 

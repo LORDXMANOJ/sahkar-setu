@@ -198,7 +198,7 @@ export function Assistant() {
           )}
           {messages.map((m, i) =>
             m.role === "user" ? (
-              <p key={i} className="ml-auto w-fit max-w-[85%] rounded-xl rounded-br-md bg-accent px-4 py-2.5 text-[0.9375rem] text-white dark:text-[#0e1330]">
+              <p key={i} className="ml-auto w-fit max-w-[85%] rounded-xl rounded-br-md bg-accent px-4 py-2.5 text-[0.9375rem] text-white">
                 {m.content}
               </p>
             ) : (

@@ -33,14 +33,14 @@ export default async function AppLayout({ children }: LayoutProps<"/app">) {
     </form>
   );
   return (
-    <div className="lg:grid lg:min-h-dvh lg:grid-cols-[16rem_minmax(0,1fr)]">
-      <aside className="sticky top-0 hidden h-dvh flex-col gap-10 border-r border-line bg-surface/50 px-4 py-6 lg:flex">
+    <div className="app-theme min-h-dvh lg:grid lg:grid-cols-[16rem_minmax(0,1fr)]">
+      <aside className="sticky top-0 hidden h-dvh flex-col gap-10 border-r border-line bg-surface px-4 py-6 lg:flex">
         <div className="px-2">
           <Logo href="/" />
         </div>
         <SideNav access={access} />
         <div className="mt-auto space-y-3 px-2">
-          <div className="rounded-lg border border-line p-3">
+          <div className="rounded-lg bg-canvas p-3">
             <p className="truncate text-sm font-medium" data-no-translate>{user.name}</p>
             <p className="flex items-center gap-2 text-xs text-ink-faint">
               <span className={`inline-block size-1.5 rounded-full ${user.role === "demo" ? "bg-warn" : "bg-ok"}`} aria-hidden="true" />

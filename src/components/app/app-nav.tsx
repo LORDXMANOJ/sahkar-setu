@@ -38,7 +38,7 @@ export function SideNav({ access }: { access: Access }) {
           href={href}
           aria-current={active ? "page" : undefined}
           className={`flex items-center gap-3 rounded-xl px-3 py-2.5 text-[0.9375rem] font-medium transition-colors ${
-            active ? "bg-ink text-canvas" : "text-ink-soft hover:bg-line/50 hover:text-ink"
+            active ? "bg-accent-wash font-semibold text-[var(--brand-dark)]" : "text-ink-soft hover:bg-canvas hover:text-ink"
           }`}
         >
           <Icon className="size-[1.125rem]" aria-hidden="true" />

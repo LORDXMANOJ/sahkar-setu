@@ -11,6 +11,7 @@ import {
   Noto_Sans_Oriya,
   Noto_Sans_Tamil,
   Noto_Sans_Telugu,
+  Plus_Jakarta_Sans,
 } from "next/font/google";
 import { Providers } from "@/components/providers";
 import { getDictionary } from "@/lib/i18n/server";
@@ -18,6 +19,8 @@ import "./globals.css";
 
 // One family for every script. Only Latin is preloaded; each script's file is
 // fetched by the browser only when a page actually contains that script.
+// Plus Jakarta Sans sets the app's Latin text; Noto covers every Indian script as fallback.
+const jakarta = Plus_Jakarta_Sans({ variable: "--font-jakarta", subsets: ["latin"], display: "swap" });
 const noto = Noto_Sans({ variable: "--font-noto", subsets: ["latin"], display: "swap" });
 const deva = Noto_Sans_Devanagari({ variable: "--font-noto-deva", subsets: ["devanagari"], display: "swap", preload: false });
 const tamil = Noto_Sans_Tamil({ variable: "--font-noto-tamil", subsets: ["tamil"], display: "swap", preload: false });
@@ -28,7 +31,7 @@ const gujarati = Noto_Sans_Gujarati({ variable: "--font-noto-gujarati", subsets:
 const gurmukhi = Noto_Sans_Gurmukhi({ variable: "--font-noto-gurmukhi", subsets: ["gurmukhi"], display: "swap", preload: false });
 const malayalam = Noto_Sans_Malayalam({ variable: "--font-noto-malayalam", subsets: ["malayalam"], display: "swap", preload: false });
 const oriya = Noto_Sans_Oriya({ variable: "--font-noto-oriya", subsets: ["oriya"], display: "swap", preload: false });
-const fontVars = [noto, deva, tamil, telugu, kannada, bengali, gujarati, gurmukhi, malayalam, oriya].map((f) => f.variable).join(" ");
+const fontVars = [jakarta, noto, deva, tamil, telugu, kannada, bengali, gujarati, gurmukhi, malayalam, oriya].map((f) => f.variable).join(" ");
 
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl()),
