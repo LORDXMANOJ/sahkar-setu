@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { configuredSiteUrl } from "@/lib/site";
 import Link from "next/link";
 import QRCode from "qrcode";
 import { headers } from "next/headers";
@@ -23,7 +24,8 @@ function safeDecode(v: string) {
 
 /** Prefer the configured site URL; the Host header is client-controlled. */
 async function siteOrigin() {
-  if (process.env.NEXT_PUBLIC_SITE_URL) return process.env.NEXT_PUBLIC_SITE_URL.replace(/\/$/, "");
+  const configured = configuredSiteUrl();
+  if (configured) return configured;
   const host = (await headers()).get("host") ?? "localhost:3000";
   return `${host.startsWith("localhost") ? "http" : "https"}://${host}`;
 }

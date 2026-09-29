@@ -1,4 +1,5 @@
 import type { Metadata, Viewport } from "next";
+import { siteUrl } from "@/lib/site";
 import {
   Noto_Sans,
   Noto_Sans_Bengali,
@@ -30,7 +31,7 @@ const oriya = Noto_Sans_Oriya({ variable: "--font-noto-oriya", subsets: ["oriya"
 const fontVars = [noto, deva, tamil, telugu, kannada, bengali, gujarati, gurmukhi, malayalam, oriya].map((f) => f.variable).join(" ");
 
 export const metadata: Metadata = {
-  metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000"),
+  metadataBase: new URL(siteUrl()),
   title: {
     default: "Sahkar Setu: cooperative training, certification and jobs",
     template: "%s | Sahkar Setu",

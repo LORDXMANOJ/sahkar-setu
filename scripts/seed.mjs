@@ -3,7 +3,7 @@
 import { createClient } from "@supabase/supabase-js";
 import { existsSync, readdirSync, readFileSync } from "node:fs";
 
-const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
+const url = process.env.NEXT_PUBLIC_SUPABASE_URL?.replace(/^(https:\/\/[^/]+).*$/, "$1");
 const secret = process.env.SUPABASE_SECRET_KEY;
 const password = process.env.DEMO_PASSWORD;
 if (!url || !secret || !password) {

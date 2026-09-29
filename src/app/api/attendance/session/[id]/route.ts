@@ -1,4 +1,5 @@
 import QRCode from "qrcode";
+import { configuredSiteUrl } from "@/lib/site";
 import { formatCode, getSession } from "@/lib/attendance";
 import { can, getCurrentUser } from "@/lib/auth";
 import { getTrainee } from "@/lib/data";
@@ -17,7 +18,7 @@ export async function GET(request: Request, { params }: RouteContext<"/api/atten
   // Trainers see only their own sessions.
   if (!s || s.trainerId !== user.id) return Response.json({ error: "Session not found." }, { status: 404 });
 
-  const origin = process.env.NEXT_PUBLIC_SITE_URL?.replace(/\/$/, "") ?? new URL(request.url).origin;
+  const origin = configuredSiteUrl() ?? new URL(request.url).origin;
   const link = `${origin}/a/${s.code}`;
   const qr = QRCode.create(link, { errorCorrectionLevel: "M" });
 
